@@ -1,0 +1,226 @@
+<!DOCTYPE HTML><html>
+<head>
+    <title>PIF_LAB DASHBOARD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="icon" href="data:,">
+    <style>
+        html {font-family: Courier; display: inline-block; text-align: center;}
+        h1 {  font-size: 2rem;}
+        body {  margin: 0;}
+        .topnav { overflow: hidden; background-color: #2f4468; color: white; font-size: 1.7rem; }
+        .content { padding: 20px; }
+        .card { background-color: white; box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5); }
+        .cards { max-width: 700px; margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+        .reading { font-size: 2.8rem; }
+        .timestamp { color: #bebebe; font-size: 1rem; }
+        .card-title{ font-size: 1.2rem; font-weight : bold; }
+        .card.voltage { color: #7c041a; }
+        .card.current { color: #03807b; }
+
+
+        /* Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .2s;
+            transition: .2s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .2s;
+            transition: .2s;
+        }
+        input:checked + .slider {
+            background-color: #064d87;
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #6c8ea9;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        } 
+
+        #chart_div {
+        width: 1200px;
+        }
+
+    </style>
+
+    
+
+</head>
+<body>
+    <!-- Title -->
+    <div class="topnav">
+        <h1>PIF_LAB DASHBOARD</h1>
+    </div>
+
+    <!-- ADC -->
+    <div class="content">
+        <div class="cards">
+          <div class="card voltage">
+            <p class="card-title">VOLTAGE</p><p><span class="reading"><span id="volt"></span> mV</span></p>
+          </div>
+          <div class="card current">
+            <p class="card-title">CURRENT</p><p><span class="reading"><span id="ampe"></span> mA</span></p>
+          </div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+
+    <!-- CONTAINER FOR CHART -->
+    <div id="chart_div"></div>
+    <script
+        type="text/javascript"
+        src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+
+    <!-- Switch -->
+    <h2>Switch</h2>
+    <h3>Switch 1</h3>
+    <label class="switch" id="switch1">
+        <input type="checkbox" checked id="myCheck1" onclick="myFunction1()">
+        <span class="slider"></span>
+    </label><br><br>
+    <h3>Switch 2</h3>
+    <label class="switch" id="switch2">
+        <input type="checkbox" checked id="myCheck2" onclick="myFunction2()">
+        <span class="slider"></span>
+    </label><br><br>
+    <h3>Switch 3</h3>
+    <label class="switch" id="switch2">
+        <input type="checkbox" checked id="myCheck3" onclick="myFunction3()">
+        <span class="slider"></span>
+    </label><br><br>
+
+    <script>
+        var xhttp1 = new XMLHttpRequest();
+
+        var element3;
+        xhttp1.onreadystatechange = function() {
+        const obj = JSON.parse(this.responseText);
+        var element1 = document.getElementById('volt');
+        element1.innerText = obj.voltage_value;
+        var element2 = document.getElementById('ampe');
+        element2.innerText = obj.current_value;
+        element3 = obj.current_number;
+        }
+        
+        function myFunction1() {
+            var checkBox = document.getElementById("myCheck1");
+            if(checkBox.checked == true){
+                xhttp1.open("POST", "/switch1", true);
+                xhttp1.send("1");
+            }else{
+                xhttp1.open("POST", "/switch1", true);
+                xhttp1.send ("0");
+            }
+        }
+
+        function myFunction2() {
+            var checkBox = document.getElementById("myCheck2");
+            if(checkBox.checked == true){
+                xhttp1.open("POST", "/switch2", true);
+                xhttp1.send("1");
+            }else{
+                xhttp1.open("POST", "/switch2", true);
+                xhttp1.send ("0");
+            }
+        }
+
+        function myFunction3() {
+            var checkBox = document.getElementById("myCheck3");
+            if(checkBox.checked == true){
+                xhttp1.open("POST", "/switch3", true);
+                xhttp1.send("1");
+            }else{
+                xhttp1.open("POST", "/switch3", true);
+                xhttp1.send ("0");
+            }
+        }
+
+        setInterval(function ( ) {
+            xhttp1.open("GET", "/adc", true);
+            xhttp1.send();
+        }, 800);
+        
+        // load current chart package
+        google.charts.load('current', {
+          packages: ['corechart', 'line'],
+        });
+        // set callback function when api loaded
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+          // create data object with default value
+          let data = google.visualization.arrayToDataTable([
+            ['Time', 'Current'],
+            [0, 0],
+          ]);
+          // create options object with titles, colors, etc.
+          let options = {
+            title: 'Current(mA) real time',
+            hAxis: {
+              textPosition: 'none',
+            },
+            vAxis: {
+              title: 'mA',
+            },
+          };
+          // draw chart on load
+          let chart = new google.visualization.LineChart(
+            document.getElementById('chart_div')
+          );
+          chart.draw(data, options);
+          // max amount of data rows that should be displayed
+          let maxDatas = 100;
+          // interval for adding new data every 250ms
+          let index = 0;
+          setInterval(function () {
+            // instead of this random, you can make an ajax call for the current cpu usage or what ever data you want to display
+            // const obj = JSON.parse(this.responseText);
+             let current_inchart = element3;
+            if (data.getNumberOfRows() > maxDatas) {
+              data.removeRows(0, data.getNumberOfRows() - maxDatas);
+            }
+            data.addRow([index, current_inchart]);
+            chart.draw(data, options);
+            index++;
+          }, 103);
+        }
+    </script>
+
+</body>
+</html>
